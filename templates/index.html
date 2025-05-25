@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>SNARE Predictor</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h1>🔬 SNARE Protein Prediction</h1>
+
+  <textarea id="sequence" placeholder="Paste protein sequence here..."></textarea><br>
+  <button onclick="predict()">Predict</button>
+
+  <h2 id="result"></h2>
+
+  <script>
+    async function predict() {
+      const seq = document.getElementById("sequence").value;
+      const res = await fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sequence: seq })
+      });
+      const data = await res.json();
+      document.getElementById("result").innerText =
+        `Prediction: ${data.result} (score: ${data.score.toFixed(3)})`;
+    }
+  </script>
+</body>
+</html>
