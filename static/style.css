@@ -1,0 +1,18 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 40px;
+}
+textarea {
+  width: 400px;
+  height: 120px;
+  font-family: monospace;
+}
+button {
+  padding: 10px 20px;
+  margin-top: 10px;
+}
+#result {
+  font-size: 1.5em;
+  margin-top: 20px;
+  color: #2c7;
+}
