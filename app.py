@@ -13,11 +13,11 @@ def build_model():
         MaxPooling1D(pool_size=2, name="max_pooling1d"),
         Flatten(name="flatten"),
         Dense(64, activation='relu', name="dense"),
-        Dense(1, activation='sigmoid', name="dense_1")  # 若為多分類改為 softmax
+        Dense(1, activation='sigmoid', name="dense_1")
     ])
     return model
 
-# ✅ 載入模型權重
+# ✅ 載入模型權量
 model = build_model()
 model.load_weights("cnn_model.h5")
 
@@ -44,3 +44,8 @@ def predict():
         return jsonify({"result": result, "score": float(pred)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
