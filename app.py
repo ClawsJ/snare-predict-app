@@ -40,7 +40,7 @@ def predict():
         features = extract_features(sequence)  # shape: (L, D)
         features = np.expand_dims(features, axis=0)  # shape: (1, L, D)
         pred = model.predict(features)[0][0]
-        result = "SNARE" if pred >= 0.5 else "Not SNARE"
+        result = "SNARE" if pred >= 0.61 else "Not SNARE"
         return jsonify({"result": result, "score": float(pred)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
