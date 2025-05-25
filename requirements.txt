@@ -1,5 +1,4 @@
 tensorflow==2.15.0
-keras==3.10.0
 numpy>=1.23,<1.27
 scikit-learn>=1.0
 flask
