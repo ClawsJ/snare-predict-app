@@ -1,13 +1,26 @@
 from flask import Flask, request, jsonify, render_template
 import numpy as np
-from keras.models import load_model
+from keras.models import Sequential
+from keras.layers import InputLayer, Conv1D, MaxPooling1D, Flatten, Dense
 
 app = Flask(__name__)
 
-# 載入 .keras 格式的模型
-model = load_model("cnn_model.h5")
+# ✅ 重建模型架構
+def build_model():
+    model = Sequential([
+        InputLayer(batch_input_shape=(None, 500, 20), name="input_layer"),
+        Conv1D(filters=64, kernel_size=3, activation='relu', name="conv1d"),
+        MaxPooling1D(pool_size=2, name="max_pooling1d"),
+        Flatten(name="flatten"),
+        Dense(64, activation='relu', name="dense"),
+        Dense(1, activation='sigmoid', name="dense_1")  # 若為多分類改為 softmax
+    ])
+    return model
 
-# 引入特徵萃取函式（需自行實作）
+# ✅ 載入模型權重
+model = build_model()
+model.load_weights("cnn_model.h5")
+
 from feature_extraction import extract_features
 
 @app.route("/")
@@ -22,7 +35,7 @@ def predict():
         return jsonify({"error": "Missing 'sequence' in request"}), 400
 
     sequence = data["sequence"]
-    
+
     try:
         features = extract_features(sequence)  # shape: (L, D)
         features = np.expand_dims(features, axis=0)  # shape: (1, L, D)
