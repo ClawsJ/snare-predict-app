@@ -5,7 +5,7 @@ from keras.models import load_model
 app = Flask(__name__)
 
 # 載入 .keras 格式的模型
-model = load_model("cnn_model.keras")
+model = load_model("cnn_model.h5")
 
 # 引入特徵萃取函式（需自行實作）
 from feature_extraction import extract_features
