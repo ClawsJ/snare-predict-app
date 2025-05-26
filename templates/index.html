@@ -1,64 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>SNARE Predictor</title>
+  <meta charset="UTF-8">
+  <title>SNARE Predictor</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    textarea, input { width: 100%; padding: 10px; margin-bottom: 10px; }
+    button { padding: 10px 20px; margin-right: 10px; }
+    #email-section { display: none; }
+  </style>
 </head>
 <body>
-    <h2>SNARE Protein Predictor</h2>
+  <h2>SNARE Predictor</h2>
 
-    <textarea id="sequence" placeholder="Paste protein sequence here..." rows="10" cols="60"></textarea>
-    <br>
-    <button onclick="submitSequence()">Predict</button>
+  <label for="sequence">Paste Protein Sequence:</label>
+  <textarea id="sequence" rows="5" placeholder="e.g. MTEITAAMVKELRESTGAG..."></textarea>
 
-    <div id="emailSection" style="display:none;">
-        <p>Prediction completed. Please enter your email to receive the result:</p>
-        <input type="email" id="email" placeholder="your@email.com">
-        <button onclick="sendEmail()">Send</button>
-    </div>
+  <button onclick="predict('cnn')">Predict with CNN</button>
+  <button onclick="predict('svm')">Predict with SVM</button>
 
-    <p id="status"></p>
+  <div id="email-section">
+    <label for="email">Enter your Email:</label>
+    <input type="email" id="email" placeholder="your_email@example.com">
+    <button onclick="sendEmail()">Send Result</button>
+  </div>
 
-    <script>
-        let predictionResult = null;
+  <div id="status"></div>
 
-        function submitSequence() {
-            const seq = document.getElementById("sequence").value.trim();
+  <script>
+    let cachedResult = null;
 
-            fetch("/predict", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sequence: seq })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById("status").innerText = "Error: " + data.error;
-                } else {
-                    predictionResult = data;
-                    document.getElementById("emailSection").style.display = "block";
-                    document.getElementById("status").innerText = "Prediction complete. Please enter your email.";
-                }
-            });
-        }
+    async function predict(method) {
+      const sequence = document.getElementById("sequence").value.trim();
+      if (!sequence) {
+        alert("Please enter a protein sequence.");
+        return;
+      }
 
-        function sendEmail() {
-            const email = document.getElementById("email").value.trim();
-            if (!email) {
-                alert("Please enter a valid email.");
-                return;
-            }
+      document.getElementById("status").innerText = "Predicting...";
 
-            fetch("/send_email", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email, result: predictionResult })
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById("status").innerText = data.message || "Email sent!";
-            });
-        }
-    </script>
+      const res = await fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sequence })
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        document.getElementById("status").innerText = "❌ Error: " + data.error;
+        return;
+      }
+
+      cachedResult = data;  // cache for email sending
+      document.getElementById("email-section").style.display = "block";
+      document.getElementById("status").innerText = `✅ Predicted: ${data.result} (score = ${data.score.toFixed(4)})\nPlease enter your email to receive the result.`;
+    }
+
+    async function sendEmail() {
+      const email = document.getElementById("email").value.trim();
+      if (!email || !cachedResult) {
+        alert("Please complete prediction and enter a valid email.");
+        return;
+      }
+
+      const res = await fetch("/send_email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, result: cachedResult })
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        document.getElementById("status").innerText = "❌ Error sending email: " + data.error;
+      } else {
+        document.getElementById("status").innerText = "📩 Email sent successfully!";
+        document.getElementById("email-section").style.display = "none";
+      }
+    }
+  </script>
 </body>
 </html>
