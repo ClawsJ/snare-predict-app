@@ -1,30 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>SNARE Predictor</title>
-  <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <title>SNARE Predictor</title>
 </head>
 <body>
-  <h1>🔬 SNARE Protein Prediction</h1>
+    <h2>SNARE Protein Predictor</h2>
 
-  <textarea id="sequence" placeholder="Paste protein sequence here..."></textarea><br>
-  <button onclick="predict()">Predict</button>
+    <textarea id="sequence" placeholder="Paste protein sequence here..." rows="10" cols="60"></textarea>
+    <br>
+    <button onclick="submitSequence()">Predict</button>
 
-  <h2 id="result"></h2>
+    <div id="emailSection" style="display:none;">
+        <p>Prediction completed. Please enter your email to receive the result:</p>
+        <input type="email" id="email" placeholder="your@email.com">
+        <button onclick="sendEmail()">Send</button>
+    </div>
 
-  <script>
-    async function predict() {
-      const seq = document.getElementById("sequence").value;
-      const res = await fetch("/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sequence: seq })
-      });
-      const data = await res.json();
-      document.getElementById("result").innerText =
-        `Prediction: ${data.result} (score: ${data.score.toFixed(3)})`;
-    }
-  </script>
+    <p id="status"></p>
+
+    <script>
+        let predictionResult = null;
+
+        function submitSequence() {
+            const seq = document.getElementById("sequence").value.trim();
+
+            fetch("/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sequence: seq })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("status").innerText = "Error: " + data.error;
+                } else {
+                    predictionResult = data;
+                    document.getElementById("emailSection").style.display = "block";
+                    document.getElementById("status").innerText = "Prediction complete. Please enter your email.";
+                }
+            });
+        }
+
+        function sendEmail() {
+            const email = document.getElementById("email").value.trim();
+            if (!email) {
+                alert("Please enter a valid email.");
+                return;
+            }
+
+            fetch("/send_email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email, result: predictionResult })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("status").innerText = data.message || "Email sent!";
+            });
+        }
+    </script>
 </body>
 </html>
