@@ -52,9 +52,9 @@
         return;
       }
 
-      cachedResult = data;  // cache for email sending
+      cachedResult = data;
       document.getElementById("email-section").style.display = "block";
-      document.getElementById("status").innerText = `✅ Predicted: ${data.result} (score = ${data.score.toFixed(4)})\nPlease enter your email to receive the result.`;
+      document.getElementById("status").innerText = "✅ Prediction complete. Please enter your email to receive the result.";
     }
 
     async function sendEmail() {
