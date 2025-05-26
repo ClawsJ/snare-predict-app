@@ -11,7 +11,7 @@ def build_model():
         InputLayer(input_shape=(None, 20), name="input_layer"),
         Conv1D(filters=64, kernel_size=3, activation='relu', name="conv1d"),
         MaxPooling1D(pool_size=2, name="max_pooling1d"),
-        Flatten(name="flatten"),
+        GlobalMaxPooling1D(name="global_max_pooling"),
         Dense(64, activation='relu', name="dense"),
         Dense(1, activation='sigmoid', name="dense_1")
     ])
