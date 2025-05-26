@@ -5,21 +5,21 @@ from keras.layers import InputLayer, Conv1D, MaxPooling1D, Flatten, Dense
 
 app = Flask(__name__)
 
-# ✅ 支援可變長度輸入的 CNN 架構
+# ✅ 重建模型架構
 def build_model():
     model = Sequential([
-        InputLayer(input_shape=(None, 20), name="input_layer"),
+        InputLayer(batch_input_shape=(None, 500, 20), name="input_layer"),
         Conv1D(filters=64, kernel_size=3, activation='relu', name="conv1d"),
         MaxPooling1D(pool_size=2, name="max_pooling1d"),
-        GlobalMaxPooling1D(name="global_max_pooling"),
+        Flatten(name="flatten"),
         Dense(64, activation='relu', name="dense"),
         Dense(1, activation='sigmoid', name="dense_1")
     ])
     return model
 
-# ✅ 載入模型權重（你需要重新訓練這個結構下的模型）
+# ✅ 載入模型權量
 model = build_model()
-model.load_weights("cnn_model.h5")  # 需為新版模型訓練結果
+model.load_weights("cnn_model.h5")
 
 from feature_extraction import extract_features
 
@@ -37,8 +37,8 @@ def predict():
     sequence = data["sequence"]
 
     try:
-        features = extract_features(sequence)  # shape: (L, 20)
-        features = np.expand_dims(features, axis=0)  # shape: (1, L, 20)
+        features = extract_features(sequence)  # shape: (L, D)
+        features = np.expand_dims(features, axis=0)  # shape: (1, L, D)
         pred = model.predict(features)[0][0]
         result = "SNARE" if pred >= 0.61 else "Not SNARE"
         return jsonify({"result": result, "score": float(pred)})
